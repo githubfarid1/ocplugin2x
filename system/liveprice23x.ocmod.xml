@@ -1,6 +1,6 @@
 <modification>
      <id>esmsgatewaycom@gmail.com-PRICELIVE</id>
-    <name>Live Price Update PRO®</name>
+     <name>Live Price Update PRO®</name>
     <version>1.0</version>
     <author>esmsgatewaycom@gmail.com</author>
     <code>esmsgatewaycom@gmail.com-PRICELIVE</code>
@@ -276,9 +276,9 @@
       </operation>
 
     </file>
-    <file path="catalog/view/theme/*/template/product/product.twig">
+    <file path="catalog/view/theme/*/template/product/product.tpl">
       <operation error="skip">
-          <search ><![CDATA[{{ footer }}]]></search>
+          <search ><![CDATA[<?php echo $footer; ?>]]></search>
           <add position="before"><![CDATA[
             <!--PL-->
             <script type="text/javascript"><!--
@@ -288,7 +288,7 @@
                 $.ajax({
               		url: 'index.php?route=checkout/cart/autoprice',
                   timeout: 10000,
-              		type: 'post',
+          		    type: 'post',
               		data: $('#product input[type=\'text\'], #product input[type=\'hidden\'], #product input[type=\'radio\']:checked, #product input[type=\'checkbox\']:checked, #product select, #product textarea'),
               		dataType: 'json',
               		beforeSend: function() {
@@ -302,8 +302,8 @@
                      }, 300);  // The millis to wait before executing this block
                     price.fadeIn();
                     $("#content").find(".auto-old-price").text(json['old_price']);
-                    $("#content").find(".auto-points").text('{{ text_points }} ' + json['points']);
-                    $("#content").find(".auto-extax").text('{{ text_tax}} ' + json['extax']);
+                    $("#content").find(".auto-points").text('<?php echo $text_points; ?> ' + json['points']);
+                    $("#content").find(".auto-extax").text('<?php echo $text_tax; ?> ' + json['extax']);
               		},
                   error: function(xhr, ajaxOptions, thrownError) {
                       alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
@@ -333,46 +333,46 @@
           </add>
       </operation>
       <operation error="skip">
-          <search ><![CDATA[<h2>{{ price }}</h2>]]></search>
+          <search ><![CDATA[<h2><?php echo $price; ?></h2>]]></search>
           <add position="replace"><![CDATA[
             <!--PL-->
-            <h2><span class="auto-price">{{ price }}</span></h2>
+            <h2><span class="auto-price"><?php echo $price; ?></span></h2>
             <!------>
             ]]>
           </add>
       </operation>
       <operation error="skip">
-          <search ><![CDATA[<li><span style="text-decoration: line-through;">{{ price }}</span></li>]]></search>
+          <search ><![CDATA[<li><span style="text-decoration: line-through;"><?php echo $price; ?></span></li>]]></search>
           <add position="replace"><![CDATA[
             <!--PL-->
-            <li><span style="text-decoration: line-through;" class="auto-old-price">{{ price }}</span></li>
+            <li><span style="text-decoration: line-through;" class="auto-old-price"><?php echo $price; ?></span></li>
             <!------>
             ]]>
           </add>
       </operation>
       <operation error="skip">
-          <search ><![CDATA[<h2>{{ special }}</h2>]]></search>
+          <search ><![CDATA[<h2><?php echo $special; ?></h2>]]></search>
           <add position="replace"><![CDATA[
             <!--PL-->
-            <h2><span class="auto-price">{{ special }}</span></h2>
+            <h2><span class="auto-price"><?php echo $special; ?></span></h2>
             <!------>
             ]]>
           </add>
       </operation>
       <operation error="skip">
-          <search ><![CDATA[<li>{{ text_tax }} {{ tax }}</li>]]></search>
+          <search ><![CDATA[<li><?php echo $text_tax; ?> <?php echo $tax; ?>]]></search>
           <add position="replace"><![CDATA[
             <!--PL-->
-            <li><span class="auto-extax">{{ text_tax }} {{ tax }}</span></li>
+            <li><span class="auto-extax"><?php echo $text_tax; ?> <?php echo $tax; ?></span></li>
             <!------>
             ]]>
           </add>
       </operation>
       <operation error="skip">
-          <search ><![CDATA[<li>{{ text_points }} {{ points }}</li>]]></search>
+          <search ><![CDATA[<li><?php echo $text_points; ?> <?php echo $points; ?></li>]]></search>
           <add position="replace"><![CDATA[
             <!--PL-->
-            <li><span class="auto-points">{{ text_points }} {{ points }}</span></li>
+            <li><span class="auto-points"><?php echo $text_points; ?> <?php echo $points; ?></span></li>
             <!------>
             ]]>
           </add>
