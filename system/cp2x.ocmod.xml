@@ -1,0 +1,165 @@
+<modification>
+    <id>esmsgatewaycom@gmail.com-BCI</id>
+    <name>Copyright Watermark Image</name>
+    <version>2.0</version>
+    <author>esmsgatewaycom@gmail.com</author>
+    <code>esmsgatewaycom@gmail.com-BCI</code>
+    <file path="catalog/model/tool/image.php">
+        <operation>
+            <search><![CDATA[return $this->config->get('config_url') . 'image/' . $image_new;]]>
+            </search>
+            <add position="after" offset="2"><![CDATA[    //farid    
+    function imagecopymerge_alpha($dst_im, $src_im, $dst_x, $dst_y, $src_x, $src_y, $src_w, $src_h, $pct) {
+        if (!isset($pct)) {
+            return false;
+        }
+        $pct /= 100;
+        // Get image width and height
+        $w = imagesx($src_im);
+        $h = imagesy($src_im);
+        // Turn alpha blending off
+        imagealphablending($src_im, false);
+        // Find the most opaque pixel in the image (the one with the smallest alpha value)
+        $minalpha = 127;
+        for ($x = 0; $x < $w; $x++)
+            for ($y = 0; $y < $h; $y++) {
+                $alpha = ( imagecolorat($src_im, $x, $y) >> 24 ) & 0xFF;
+                if ($alpha < $minalpha) {
+                    $minalpha = $alpha;
+                }
+            }
+        //loop through image pixels and modify alpha for each
+        for ($x = 0; $x < $w; $x++) {
+            for ($y = 0; $y < $h; $y++) {
+                //get current alpha value (represents the TANSPARENCY!)
+                $colorxy = imagecolorat($src_im, $x, $y);
+                $alpha = ( $colorxy >> 24 ) & 0xFF;
+                //calculate new alpha
+                if ($minalpha !== 127) {
+                    $alpha = 127 + 127 * $pct * ( $alpha - 127 ) / ( 127 - $minalpha );
+                } else {
+                    $alpha += 127 * $pct;
+                }
+                //get the color index with new alpha
+                $alphacolorxy = imagecolorallocatealpha($src_im, ( $colorxy >> 16 ) & 0xFF, ( $colorxy >> 8 ) & 0xFF, $colorxy & 0xFF, $alpha);
+                //set pixel with the new color + opacity
+                if (!imagesetpixel($src_im, $x, $y, $alphacolorxy)) {
+                    return false;
+                }
+            }
+        }
+
+        // The image copy
+        imagecopy($dst_im, $src_im, $dst_x, $dst_y, $src_x, $src_y, $src_w, $src_h);
+    }
+  ]]>
+            </add>
+        </operation>
+        <operation>
+            <search><![CDATA[$image->save(DIR_IMAGE . $image_new);]]>
+            </search>
+            <add position="after"><![CDATA[    //farid    
+                                if (isset($this->request->get['store_id'])) {
+                                    $store_id = $this->request->get['store_id'];
+                                } else {
+                                    $store_id = 0;
+                                }
+                                $this->load->model('setting/setting');
+                                $settings = $this->model_setting_setting->getSetting('waterimage', $store_id);
+                                $res=false;
+                                if (!empty($settings) && $settings['waterimage_status']=='1'){
+                                    //$configs = $this->model_setting_setting->getSetting('config', $store_id);
+                                    $tc = $this->config->get('config_theme');
+                                    if ($settings['waterimage_category_image']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_category_width') && $height==$this->config->get($tc . '_image_category_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_product_image_thumb']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_thumb_width') && $height==$this->config->get($tc . '_image_thumb_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_product_image_popup']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_popup_width') && $height==$this->config->get($tc . '_image_popup_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_product_image_list']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_product_width') && $height==$this->config->get($tc . '_image_product_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_additional_product_image']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_additional_width') && $height==$this->config->get($tc . '_image_additional_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_related_product_image']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_related_width') && $height==$this->config->get($tc . '_image_related_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_compare_image']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_compare_width') && $height==$this->config->get($tc . '_image_compare_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_wishlist_image']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_wishlist_width') && $height==$this->config->get($tc . '_image_wishlist_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                    if ($res==false && $settings['waterimage_cart_image']=='1') {
+                                        if ($width==$this->config->get($tc . '_image_cart_width') && $height==$this->config->get($tc . '_image_cart_height') ) {
+                                            $res=true;
+                                        }
+                                    }
+                                        
+                                    if ($res==false && !empty($settings['waterimage_size_width1']) && !empty($settings['waterimage_size_height1'])) {
+                                        if ($width==$settings['waterimage_size_width1'] && $height==$settings['waterimage_size_height1']) {
+                                            $res=true;
+                                        }    
+                                    }
+                                    if ($res==false && !empty($settings['waterimage_size_width2']) && !empty($settings['waterimage_size_height2'])) {
+                                        if ($width==$settings['waterimage_size_width2'] && $height==$settings['waterimage_size_height2']) {
+                                            $res=true;
+                                        }    
+                                    }
+                                    if ($res==false && !empty($settings['waterimage_size_width3']) && !empty($settings['waterimage_size_height3'])) {
+                                        if ($width==$settings['waterimage_size_width3'] && $height==$settings['waterimage_size_height3']) {
+                                            $res=true;
+                                        }    
+                                    }
+                                    if ($res==false && !empty($settings['waterimage_size_width4']) && !empty($settings['waterimage_size_height4'])) {
+                                        if ($width==$settings['waterimage_size_width4'] && $height==$settings['waterimage_size_height4']) {
+                                            $res=true;
+                                        }    
+                                    }
+                                    if ($res==false && !empty($settings['waterimage_size_width5']) && !empty($settings['waterimage_size_height5'])) {
+                                        if ($width==$settings['waterimage_size_width5'] && $height==$settings['waterimage_size_height5']) {
+                                            $res=true;
+                                        }    
+                                    }
+                                    
+                                
+                                    if ($res){
+                                        $waterimage = $settings['waterimage_image'];
+                                        $pros = $settings['waterimage_pros'];
+                                        if (file_exists(DIR_IMAGE . $waterimage)){
+                                            $im = new Image(DIR_IMAGE . $image_new);
+                                            $wimage = new Image(DIR_IMAGE . $waterimage);
+                                            $wimage->resize($width, $height);
+                                            $this->imagecopymerge_alpha($im->getImage(), $wimage->getImage(), 0, 0, 0, 0, $width, $height, $pros);
+                                            imagesavealpha($im->getImage(), true);
+                                            $im->save(DIR_IMAGE . $image_new);
+                                        }
+                                    }
+                                }
+                                //end farid
+
+  ]]>
+            </add>
+        </operation>
+    </file>
+</modification>
