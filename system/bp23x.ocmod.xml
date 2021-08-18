@@ -1,0 +1,110 @@
+<modification>
+     <id>esmsgatewaycom@gmail.com-BULKPRO</id>
+    <name>Bulk Product Updater</name>
+    <version>1.0</version>
+    <author>esmsgatewaycom@gmail.com</author>
+    <code>esmsgatewaycom@gmail.com-BULKPRO</code>
+    <file path="admin/model/catalog/product.php">
+        <operation error="ignore">
+            <search><![CDATA[public function editProduct($product_id, $data) {]]></search>
+            <add position="before"><![CDATA[
+              //bulkimg
+              public function updateimg($product_id, $data ) {
+              if (isset($data['img-productbulk'])) {
+          			$this->db->query("UPDATE " . DB_PREFIX . "product SET image = '" . $this->db->escape($data['img-productbulk']) . "' WHERE product_id = '" . (int)$product_id . "'");
+          		}
+              $this->db->query("DELETE FROM " . DB_PREFIX . "product_image WHERE product_id = '" . (int)$product_id . "'");
+          		if (isset($data['product_image'])) {
+          			foreach ($data['product_image'] as $product_image) {
+          				$this->db->query("INSERT INTO " . DB_PREFIX . "product_image SET product_id = '" . (int)$product_id . "', image = '" . $this->db->escape($product_image['image']) . "', sort_order = '" . (int)$product_image['sort_order'] . "'");
+          			}
+          		}
+
+            	}
+              //-------
+              //bulkimg
+              public function updateopt($product_id, $data) {
+            		$this->db->query("DELETE FROM " . DB_PREFIX . "product_option WHERE product_id = '" . (int)$product_id . "'");
+            		$this->db->query("DELETE FROM " . DB_PREFIX . "product_option_value WHERE product_id = '" . (int)$product_id . "'");
+
+            		if (isset($data['product_option'])) {
+            			foreach ($data['product_option'] as $product_option) {
+            				if ($product_option['type'] == 'select' || $product_option['type'] == 'radio' || $product_option['type'] == 'checkbox' || $product_option['type'] == 'image') {
+            					if (isset($product_option['product_option_value'])) {
+            						$this->db->query("INSERT INTO " . DB_PREFIX . "product_option SET product_option_id = '" . (int)$product_option['product_option_id'] . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', required = '" . (int)$product_option['required'] . "'");
+
+            						$product_option_id = $this->db->getLastId();
+
+            						foreach ($product_option['product_option_value'] as $product_option_value) {
+            							$this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET product_option_value_id = '" . (int)$product_option_value['product_option_value_id'] . "', product_option_id = '" . (int)$product_option_id . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', option_value_id = '" . (int)$product_option_value['option_value_id'] . "', quantity = '" . (int)$product_option_value['quantity'] . "', subtract = '" . (int)$product_option_value['subtract'] . "', price = '" . (float)$product_option_value['price'] . "', price_prefix = '" . $this->db->escape($product_option_value['price_prefix']) . "', points = '" . (int)$product_option_value['points'] . "', points_prefix = '" . $this->db->escape($product_option_value['points_prefix']) . "', weight = '" . (float)$product_option_value['weight'] . "', weight_prefix = '" . $this->db->escape($product_option_value['weight_prefix']) . "'");
+            						}
+            					}
+            				} else {
+            					$this->db->query("INSERT INTO " . DB_PREFIX . "product_option SET product_option_id = '" . (int)$product_option['product_option_id'] . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', value = '" . $this->db->escape($product_option['value']) . "', required = '" . (int)$product_option['required'] . "'");
+            				}
+            			}
+            		}
+
+            	}
+              public function updateatt($product_id, $data) {
+                $this->db->query("DELETE FROM " . DB_PREFIX . "product_attribute WHERE product_id = '" . (int)$product_id . "'");
+
+                if (!empty($data['product_attribute'])) {
+                  foreach ($data['product_attribute'] as $product_attribute) {
+                    if ($product_attribute['attribute_id']) {
+                      // Removes duplicates
+                      $this->db->query("DELETE FROM " . DB_PREFIX . "product_attribute WHERE product_id = '" . (int)$product_id . "' AND attribute_id = '" . (int)$product_attribute['attribute_id'] . "'");
+
+                      foreach ($product_attribute['product_attribute_description'] as $language_id => $product_attribute_description) {
+                        $this->db->query("INSERT INTO " . DB_PREFIX . "product_attribute SET product_id = '" . (int)$product_id . "', attribute_id = '" . (int)$product_attribute['attribute_id'] . "', language_id = '" . (int)$language_id . "', text = '" .  $this->db->escape($product_attribute_description['text']) . "'");
+                      }
+                    }
+                  }
+                }
+
+              }
+              //------
+                ]]>
+            </add>
+        </operation>
+    </file>
+    <file path="admin/controller/common/column_left.php">
+        <operation error="ignore">
+            <search><![CDATA[$this->load->language('common/column_left');]]></search>
+            <add position="after"><![CDATA[
+              $this->load->language('catalog/bulkprod');
+              ]]>
+            </add>
+        </operation>
+        <operation error="ignore">
+            <search><![CDATA[if ($this->user->hasPermission('access', 'catalog/recurring')) {]]></search>
+            <add position="before"><![CDATA[
+              // bulkimage
+        			if ($this->user->hasPermission('access', 'catalog/productimg')) {
+        				$catalog[] = array(
+                  'name'	   => $this->language->get('text_bulkimage'),
+        					'href'     => $this->url->link('catalog/productimg', 'token=' . $this->session->data['token'], true),
+        					'children' => array()
+        				);
+        			}
+              if ($this->user->hasPermission('access', 'catalog/productopt')) {
+        				$catalog[] = array(
+                  'name'	   => $this->language->get('text_bulkopt'),
+        					'href'     => $this->url->link('catalog/productopt', 'token=' . $this->session->data['token'], true),
+        					'children' => array()
+        				);
+        			}
+              if ($this->user->hasPermission('access', 'catalog/productatt')) {
+        				$catalog[] = array(
+                  'name'	   => $this->language->get('text_bulkatt'),
+        					'href'     => $this->url->link('catalog/productatt', 'token=' . $this->session->data['token'], true),
+        					'children' => array()
+        				);
+        			}
+
+            ]]>
+            </add>
+        </operation>
+    </file>
+
+</modification>
